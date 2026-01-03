@@ -1,5 +1,5 @@
-import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import React, {useEffect, useRef} from 'react';
+import {View, Text, StyleSheet, Animated} from 'react-native';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../navigation/AppNavigator';
 import {ButtonBig, Avatar} from '../../ui/components';
@@ -10,6 +10,24 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 export const HomeScreen: React.FC<Props> = ({navigation}) => {
   const {totalPoints, resetGame} = useGameStore();
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ]),
+    ).start();
+  }, [pulseAnim]);
 
   const handleStartGame = () => {
     resetGame();
@@ -81,13 +99,17 @@ export const HomeScreen: React.FC<Props> = ({navigation}) => {
       </View>
 
       {/* Botón principal */}
-      <View style={styles.buttonContainer}>
+      <Animated.View
+        style={[
+          styles.buttonContainer,
+          {transform: [{scale: pulseAnim}]},
+        ]}>
         <ButtonBig
           title="🎮 ¡EMPEZAR!"
           onPress={handleStartGame}
           backgroundColor="#4CAF50"
         />
-      </View>
+      </Animated.View>
     </View>
   );
 };

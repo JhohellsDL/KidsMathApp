@@ -1,5 +1,5 @@
-import {Platform} from 'react-native';
-import {TestIds} from 'react-native-google-mobile-ads';
+import { Platform } from 'react-native';
+import { TestIds } from 'react-native-google-mobile-ads';
 
 /**
  * Configuración de IDs de anuncios para AdMob
@@ -17,6 +17,9 @@ export const AdConfig = {
     interstitial: __DEV__
       ? TestIds.INTERSTITIAL
       : TestIds.INTERSTITIAL, // Cambiar por: 'ca-app-pub-XXXXXXXXXX/XXXXXXXXXX'
+    rewarded: __DEV__
+      ? TestIds.REWARDED
+      : TestIds.REWARDED, // Cambiar por: 'ca-app-pub-XXXXXXXXXX/XXXXXXXXXX'
   },
   // IDs de iOS
   ios: {
@@ -26,6 +29,9 @@ export const AdConfig = {
     interstitial: __DEV__
       ? TestIds.INTERSTITIAL
       : TestIds.INTERSTITIAL, // Cambiar por: 'ca-app-pub-XXXXXXXXXX/XXXXXXXXXX'
+    rewarded: __DEV__
+      ? TestIds.REWARDED
+      : TestIds.REWARDED, // Cambiar por: 'ca-app-pub-XXXXXXXXXX/XXXXXXXXXX'
   },
 };
 
@@ -45,6 +51,15 @@ export const getInterstitialId = (): string => {
   return Platform.OS === 'android'
     ? AdConfig.android.interstitial
     : AdConfig.ios.interstitial;
+};
+
+/**
+ * Obtener ID de anuncio bonificado según la plataforma
+ */
+export const getRewardedId = (): string => {
+  return Platform.OS === 'android'
+    ? AdConfig.android.rewarded
+    : AdConfig.ios.rewarded;
 };
 
 /**

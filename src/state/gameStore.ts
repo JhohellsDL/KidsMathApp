@@ -1,5 +1,5 @@
-import {create} from 'zustand';
-import {Exercise} from '../domain/models/Exercise';
+import { create } from 'zustand';
+import { Exercise } from '../domain/models/Exercise';
 
 interface GameState {
   // Estado del juego
@@ -15,6 +15,7 @@ interface GameState {
   nextExercise: () => void;
   finishGame: () => void;
   resetGame: () => void;
+  doublePoints: () => void;
 
   // Getters
   getCurrentExercise: () => Exercise | null;
@@ -57,7 +58,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   finishGame: () => {
-    set({isGameActive: false});
+    set({ isGameActive: false });
   },
 
   resetGame: () => {
@@ -68,6 +69,12 @@ export const useGameStore = create<GameState>((set, get) => ({
       totalPoints: 0,
       isGameActive: false,
     });
+  },
+
+  doublePoints: () => {
+    set(state => ({
+      totalPoints: state.totalPoints * 2,
+    }));
   },
 
   // Getters
