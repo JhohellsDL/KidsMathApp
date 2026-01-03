@@ -1,5 +1,5 @@
 import React, {useEffect, useRef} from 'react';
-import {View, Text, StyleSheet, Animated} from 'react-native';
+import {View, Text, StyleSheet, Animated, Modal, TouchableOpacity} from 'react-native';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../navigation/AppNavigator';
 import {ButtonBig, Avatar} from '../../ui/components';
@@ -11,6 +11,11 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 export const HomeScreen: React.FC<Props> = ({navigation}) => {
   const {totalPoints, resetGame} = useGameStore();
   const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  // Estados de configuración
+  const [isSettingsVisible, setIsSettingsVisible] = React.useState(false);
+  const [difficulty, setDifficulty] = React.useState<'easy' | 'medium' | 'hard'>('easy');
+  const [exerciseCount, setExerciseCount] = React.useState<number>(10);
 
   useEffect(() => {
     Animated.loop(
@@ -31,9 +36,46 @@ export const HomeScreen: React.FC<Props> = ({navigation}) => {
 
   const handleStartGame = () => {
     resetGame();
-    const exercises = new GenerateExercisesUseCase().execute(10, 1, 10);
+    
+    // Configurar rango basado en dificultad
+    let min = 1;
+    let max = 10;
+    
+    switch (difficulty) {
+      case 'medium':
+        max = 20;
+        break;
+      case 'hard':
+        max = 50;
+        break;
+      case 'easy':
+      default:
+        // Mantener defaults (1-10)
+        break;
+    }
+
+    const exercises = new GenerateExercisesUseCase().execute(exerciseCount, min, max);
     useGameStore.getState().startGame(exercises);
+    setIsSettingsVisible(false);
     navigation.navigate('Game');
+  };
+
+  const getDifficultyLabel = (diff: string) => {
+    switch (diff) {
+      case 'easy': return 'Fácil (1-10)';
+      case 'medium': return 'Medio (1-20)';
+      case 'hard': return 'Difícil (1-50)';
+      default: return '';
+    }
+  };
+
+  const getDifficultyText = (diff: string) => {
+    switch(diff) {
+      case 'easy': return 'Fácil';
+      case 'medium': return 'Medio';
+      case 'hard': return 'Difícil';
+      default: return 'Fácil';
+    }
   };
 
   return (
@@ -58,6 +100,12 @@ export const HomeScreen: React.FC<Props> = ({navigation}) => {
             <Text style={styles.pointsValue}>{totalPoints}</Text>
           </View>
         </View>
+
+        <TouchableOpacity 
+          style={styles.settingsButton}
+          onPress={() => setIsSettingsVisible(true)}>
+          <Text style={styles.settingsIcon}>⚙️</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Contenido central */}
@@ -110,6 +158,72 @@ export const HomeScreen: React.FC<Props> = ({navigation}) => {
           backgroundColor="#4CAF50"
         />
       </Animated.View>
+
+      {/* Modal de Configuración */}
+      <Modal
+        visible={isSettingsVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setIsSettingsVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Configuración ⚙️</Text>
+            
+            {/* Selector de Dificultad */}
+            <View style={styles.settingSection}>
+              <Text style={styles.settingLabel}>Dificultad:</Text>
+              <View style={styles.optionsRow}>
+                {(['easy', 'medium', 'hard'] as const).map((diff) => (
+                  <TouchableOpacity
+                    key={diff}
+                    style={[
+                      styles.optionButton,
+                      difficulty === diff && styles.optionButtonSelected
+                    ]}
+                    onPress={() => setDifficulty(diff)}>
+                    <Text style={[
+                      styles.optionText,
+                      difficulty === diff && styles.optionTextSelected
+                    ]}>
+                      {getDifficultyText(diff)}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <Text style={styles.helperText}>{getDifficultyLabel(difficulty)}</Text>
+            </View>
+
+            {/* Selector de Cantidad */}
+            <View style={styles.settingSection}>
+              <Text style={styles.settingLabel}>Ejercicios:</Text>
+              <View style={styles.optionsRow}>
+                {[5, 10, 20].map((count) => (
+                  <TouchableOpacity
+                    key={count}
+                    style={[
+                      styles.optionButton,
+                      exerciseCount === count && styles.optionButtonSelected
+                    ]}
+                    onPress={() => setExerciseCount(count)}>
+                    <Text style={[
+                      styles.optionText,
+                      exerciseCount === count && styles.optionTextSelected
+                    ]}>
+                      {count}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setIsSettingsVisible(false)}>
+              <Text style={styles.closeButtonText}>Listo 👍</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -159,7 +273,9 @@ const styles = StyleSheet.create({
   // Header
   header: {
     marginTop: 50,
-    alignItems: 'flex-start',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 20,
     zIndex: 1,
   },
@@ -304,5 +420,98 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 40,
     zIndex: 1,
+  },
+  settingsButton: {
+    backgroundColor: 'white',
+    padding: 10,
+    borderRadius: 50,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+  },
+  settingsIcon: {
+    fontSize: 24,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 25,
+    padding: 25,
+    width: '100%',
+    maxWidth: 340,
+    alignItems: 'center',
+    elevation: 10,
+  },
+  modalTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#1976D2',
+    marginBottom: 25,
+  },
+  settingSection: {
+    width: '100%',
+    marginBottom: 20,
+  },
+  settingLabel: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 10,
+    marginLeft: 5,
+  },
+  optionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  optionButton: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 15,
+    backgroundColor: '#F5F5F5',
+    borderWidth: 2,
+    borderColor: '#E0E0E0',
+    alignItems: 'center',
+  },
+  optionButtonSelected: {
+    backgroundColor: '#E3F2FD',
+    borderColor: '#2196F3',
+  },
+  optionText: {
+    fontSize: 16,
+    color: '#757575',
+    fontWeight: '600',
+  },
+  optionTextSelected: {
+    color: '#1976D2',
+    fontWeight: 'bold',
+  },
+  helperText: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 5,
+    marginLeft: 5,
+    fontStyle: 'italic',
+  },
+  closeButton: {
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 40,
+    paddingVertical: 12,
+    borderRadius: 25,
+    marginTop: 10,
+    elevation: 3,
+  },
+  closeButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
