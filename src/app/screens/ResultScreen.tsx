@@ -4,11 +4,16 @@ import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../navigation/AppNavigator';
 import {ButtonBig, AdBanner} from '../../ui/components';
 import {useGameStore} from '../../state/gameStore';
+import {useInterstitialAd} from '../../utils/useInterstitialAd';
+import {useRewardedAd} from '../../utils/useRewardedAd';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Result'>;
 
 export const ResultScreen: React.FC<Props> = ({navigation}) => {
-  const {exercises, correctAnswers, totalPoints} = useGameStore();
+  const {exercises, correctAnswers, totalPoints, doublePoints} = useGameStore();
+  const {showAd: showInterstitial} = useInterstitialAd();
+  const {showRewardedAd, loaded: isRewardedLoaded} = useRewardedAd();
+  const [hasDoubled, setHasDoubled] = React.useState(false);
 
   const scaleAnim = React.useRef(new Animated.Value(0)).current;
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
@@ -55,11 +60,21 @@ export const ResultScreen: React.FC<Props> = ({navigation}) => {
   };
 
   const handlePlayAgain = () => {
-    // Resetear el stack de navegación para evitar que el botón "atrás" 
-    // lleve de vuelta a Result
-    navigation.reset({
-      index: 0,
-      routes: [{name: 'Home'}],
+    // Show ad before navigating
+    showInterstitial(() => {
+      // Resetear el stack de navegación para evitar que el botón "atrás" 
+      // lleve de vuelta a Result
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'Home'}],
+      });
+    });
+  };
+
+  const handleDoublePoints = () => {
+    showRewardedAd(() => {
+      doublePoints();
+      setHasDoubled(true);
     });
   };
 
@@ -150,6 +165,17 @@ export const ResultScreen: React.FC<Props> = ({navigation}) => {
             </Text>
           </View>
         </Animated.View>
+
+        {/* Botón de Duplicar Puntos (Solo si el anuncio cargó y no se ha duplicado aún) */}
+        {!hasDoubled && isRewardedLoaded && (
+          <View style={styles.rewardButtonContainer}>
+             <ButtonBig
+              title="📺 ¡X2 PUNTOS!"
+              onPress={handleDoublePoints}
+              backgroundColor="#9C27B0"
+            />
+          </View>
+        )}
 
         {/* Banner de anuncios */}
         <AdBanner />
@@ -364,6 +390,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10,
     marginBottom: 10,
+  },
+  rewardButtonContainer: {
+    alignItems: 'center',
+    marginVertical: 10,
   },
 });
 
