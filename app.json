@@ -1,4 +1,7 @@
 {
   "name": "KidsMathApp",
-  "displayName": "KidsMathApp"
+  "displayName": "KidsMathApp",
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-8897050281816485~6054524378"
+  }
 }
