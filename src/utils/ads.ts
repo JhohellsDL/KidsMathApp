@@ -1,5 +1,13 @@
 import { Platform } from 'react-native';
 import { TestIds } from 'react-native-google-mobile-ads';
+import {
+  ANDROID_BANNER_ID,
+  ANDROID_INTERSTITIAL_ID,
+  ANDROID_REWARDED_ID,
+  IOS_BANNER_ID,
+  IOS_INTERSTITIAL_ID,
+  IOS_REWARDED_ID,
+} from '@env';
 
 /**
  * Configuración de IDs de anuncios para AdMob
@@ -13,25 +21,25 @@ export const AdConfig = {
     // ID de prueba de Google - Reemplazar con tu ID real
     banner: __DEV__
       ? TestIds.BANNER
-      : TestIds.BANNER, // Cambiar por: 'ca-app-pub-XXXXXXXXXX/XXXXXXXXXX'
+      : ANDROID_BANNER_ID,
     interstitial: __DEV__
       ? TestIds.INTERSTITIAL
-      : TestIds.INTERSTITIAL, // Cambiar por: 'ca-app-pub-XXXXXXXXXX/XXXXXXXXXX'
+      : ANDROID_INTERSTITIAL_ID,
     rewarded: __DEV__
       ? TestIds.REWARDED
-      : TestIds.REWARDED, // Cambiar por: 'ca-app-pub-XXXXXXXXXX/XXXXXXXXXX'
+      : ANDROID_REWARDED_ID,
   },
   // IDs de iOS
   ios: {
     banner: __DEV__
       ? TestIds.BANNER
-      : TestIds.BANNER, // Cambiar por: 'ca-app-pub-XXXXXXXXXX/XXXXXXXXXX'
+      : IOS_BANNER_ID,
     interstitial: __DEV__
       ? TestIds.INTERSTITIAL
-      : TestIds.INTERSTITIAL, // Cambiar por: 'ca-app-pub-XXXXXXXXXX/XXXXXXXXXX'
+      : IOS_INTERSTITIAL_ID,
     rewarded: __DEV__
       ? TestIds.REWARDED
-      : TestIds.REWARDED, // Cambiar por: 'ca-app-pub-XXXXXXXXXX/XXXXXXXXXX'
+      : IOS_REWARDED_ID,
   },
 };
 

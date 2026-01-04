@@ -57,11 +57,9 @@ export const useRewardedAd = () => {
                 if (onClose) onClose();
             });
 
-            try {
-                rewarded.show();
-            } catch (error) {
+            rewarded.show().catch((error) => {
                 console.log('❌ Error showing rewarded ad:', error);
-            }
+            });
         } else {
             console.log('⚠️ Rewarded ad not loaded');
         }
