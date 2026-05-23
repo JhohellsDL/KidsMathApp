@@ -2,10 +2,8 @@ import { Platform } from 'react-native';
 import { TestIds } from 'react-native-google-mobile-ads';
 import {
   ANDROID_BANNER_ID,
-  ANDROID_INTERSTITIAL_ID,
   ANDROID_REWARDED_ID,
   IOS_BANNER_ID,
-  IOS_INTERSTITIAL_ID,
   IOS_REWARDED_ID,
 } from '@env';
 
@@ -14,6 +12,9 @@ import {
  * 
  * IMPORTANTE: Actualmente usa IDs de PRUEBA de Google
  * Cuando tengas tu cuenta de AdMob, reemplaza con tus IDs reales
+ * 
+ * NOTA: Intersticiales eliminados para cumplir con políticas de Google Play Familias
+ * Solo se permiten banners y anuncios recompensados en apps para niños
  */
 export const AdConfig = {
   // IDs de Android
@@ -22,9 +23,6 @@ export const AdConfig = {
     banner: __DEV__
       ? TestIds.BANNER
       : ANDROID_BANNER_ID,
-    interstitial: __DEV__
-      ? TestIds.INTERSTITIAL
-      : ANDROID_INTERSTITIAL_ID,
     rewarded: __DEV__
       ? TestIds.REWARDED
       : ANDROID_REWARDED_ID,
@@ -34,9 +32,6 @@ export const AdConfig = {
     banner: __DEV__
       ? TestIds.BANNER
       : IOS_BANNER_ID,
-    interstitial: __DEV__
-      ? TestIds.INTERSTITIAL
-      : IOS_INTERSTITIAL_ID,
     rewarded: __DEV__
       ? TestIds.REWARDED
       : IOS_REWARDED_ID,
@@ -50,15 +45,6 @@ export const getBannerId = (): string => {
   return Platform.OS === 'android'
     ? AdConfig.android.banner
     : AdConfig.ios.banner;
-};
-
-/**
- * Obtener ID de intersticial según la plataforma
- */
-export const getInterstitialId = (): string => {
-  return Platform.OS === 'android'
-    ? AdConfig.android.interstitial
-    : AdConfig.ios.interstitial;
 };
 
 /**

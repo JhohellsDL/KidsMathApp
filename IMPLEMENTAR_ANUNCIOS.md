@@ -15,6 +15,8 @@ Tu app está dirigida a **niños**, por lo que debes:
 - ✅ Sin anuncios engañosos
 - ✅ Sin enlaces a redes sociales
 - ✅ Sin compras dentro de la app sin aprobación parental
+- ⚠️ **NO se permiten anuncios intersticiales que interfieran con la navegación**
+- ✅ Solo banners y anuncios recompensados (voluntarios)
 
 ---
 
@@ -32,11 +34,13 @@ Después de registrar, tendrás:
 App ID (Android): ca-app-pub-XXXXXXXXXX~XXXXXXXXXX
 App ID (iOS):     ca-app-pub-XXXXXXXXXX~XXXXXXXXXX
 
-Banner Unit ID:         ca-app-pub-XXXXXXXXXX/XXXXXXXXXX
-Intersticial Unit ID:   ca-app-pub-XXXXXXXXXX/XXXXXXXXXX
+Banner Unit ID:    ca-app-pub-XXXXXXXXXX/XXXXXXXXXX
+Rewarded Unit ID:  ca-app-pub-XXXXXXXXXX/XXXXXXXXXX
 ```
 
 **Guarda estos IDs, los necesitarás más adelante.**
+
+⚠️ **NOTA IMPORTANTE**: Esta app NO usa anuncios intersticiales porque Google Play los rechaza en apps de la categoría Familias cuando interfieren con la navegación.
 
 ---
 
@@ -97,12 +101,13 @@ Edita `ios/KidsMathApp/Info.plist`:
 
 ---
 
-## 🎯 Paso 3: Estrategia de Anuncios para KidsMathApp
+## 🎯 Paso 3: Estrategia de Anuncios para KidsMathApp (IMPLEMENTADA ✅)
 
-### Opción 1: Banner en Pantalla de Resultados (Recomendado ⭐)
+### ✅ Banner en Pantalla de Resultados (YA IMPLEMENTADO)
 
 **Dónde:** `ResultScreen.tsx`  
-**Por qué:** No interrumpe el juego, el niño ya terminó
+**Por qué:** No interrumpe el juego, el niño ya terminó  
+**Estado:** ✅ Implementado y cumple con políticas de Google Play
 
 ```typescript
 // ResultScreen.tsx
@@ -124,60 +129,37 @@ const BANNER_AD_UNIT_ID = __DEV__
 </View>
 ```
 
-### Opción 2: Intersticial entre Juegos (Moderado)
+### ✅ Anuncio Recompensado para Duplicar Puntos (YA IMPLEMENTADO)
 
-**Dónde:** Al completar un juego  
-**Frecuencia:** Cada 2-3 juegos (no cada vez)
+**Dónde:** `ResultScreen.tsx`  
+**Por qué:** Es voluntario, el usuario decide verlo  
+**Estado:** ✅ Implementado y cumple con políticas de Google Play  
+**Beneficio:** El niño puede duplicar sus puntos viendo un anuncio
 
-```typescript
-// En ResultScreen.tsx o HomeScreen.tsx
-import {
-  InterstitialAd,
-  AdEventType,
-  TestIds,
-} from 'react-native-google-mobile-ads';
-
-const INTERSTITIAL_AD_UNIT_ID = __DEV__
-  ? TestIds.INTERSTITIAL
-  : 'ca-app-pub-XXXXXXXXXX/XXXXXXXXXX';
-
-// Crear el intersticial
-const interstitial = InterstitialAd.createForAdRequest(
-  INTERSTITIAL_AD_UNIT_ID,
-  {
-    requestNonPersonalizedAdsOnly: true, // IMPORTANTE
-  },
-);
-
-// Cargar el anuncio
-interstitial.load();
-
-// Mostrar cuando esté listo (por ejemplo, al presionar "Jugar de nuevo")
-if (interstitial.loaded) {
-  interstitial.show();
-}
-```
+⚠️ **NOTA**: Los anuncios intersticiales fueron ELIMINADOS porque Google Play los rechaza en apps de la categoría Familias cuando interfieren con la navegación del usuario.
 
 ---
 
-## 📊 Estrategia Recomendada para KidsMathApp
+## 📊 Estrategia IMPLEMENTADA en KidsMathApp ✅
 
-### ✅ Implementación Sugerida:
+### ✅ Implementación Actual (Cumple con Google Play Familias):
 
-1. **Banner en ResultScreen** (siempre)
+1. **Banner en ResultScreen** ✅
    - Aparece cuando el niño termina
    - No interrumpe el juego
    - Menos invasivo
+   - **CUMPLE con políticas de Google Play**
 
-2. **Intersticial cada 3 juegos** (opcional)
-   - Solo después del 3er, 6to, 9no juego
-   - Da tiempo al niño de disfrutar la app
+2. **Anuncio Recompensado** ✅
+   - Voluntario (el usuario decide)
+   - Duplica los puntos ganados
+   - **CUMPLE con políticas de Google Play**
 
-### ❌ NO Recomendado:
+### ❌ NO Implementado (Por políticas de Google Play):
 
+- ❌ **Anuncios intersticiales** - RECHAZADOS por Google Play porque interfieren con la navegación
 - ❌ Anuncios durante el juego (distrae)
 - ❌ Anuncios en Home (primera impresión negativa)
-- ❌ Anuncios bonificados (pueden crear presión en niños)
 - ❌ Anuncios personalizados (prohibido para niños)
 
 ---

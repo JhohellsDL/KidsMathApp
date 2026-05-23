@@ -4,14 +4,12 @@ import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../navigation/AppNavigator';
 import {ButtonBig, AdBanner} from '../../ui/components';
 import {useGameStore} from '../../state/gameStore';
-import {useInterstitialAd} from '../../utils/useInterstitialAd';
 import {useRewardedAd} from '../../utils/useRewardedAd';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Result'>;
 
 export const ResultScreen: React.FC<Props> = ({navigation}) => {
   const {exercises, correctAnswers, totalPoints, doublePoints} = useGameStore();
-  const {showAd: showInterstitial} = useInterstitialAd();
   const {showRewardedAd, loaded: isRewardedLoaded} = useRewardedAd();
   const [hasDoubled, setHasDoubled] = React.useState(false);
 
@@ -60,14 +58,11 @@ export const ResultScreen: React.FC<Props> = ({navigation}) => {
   };
 
   const handlePlayAgain = () => {
-    // Show ad before navigating
-    showInterstitial(() => {
-      // Resetear el stack de navegación para evitar que el botón "atrás" 
-      // lleve de vuelta a Result
-      navigation.reset({
-        index: 0,
-        routes: [{name: 'Home'}],
-      });
+    // Resetear el stack de navegación para evitar que el botón "atrás" 
+    // lleve de vuelta a Result
+    navigation.reset({
+      index: 0,
+      routes: [{name: 'Home'}],
     });
   };
 
@@ -166,13 +161,14 @@ export const ResultScreen: React.FC<Props> = ({navigation}) => {
           </View>
         </Animated.View>
 
-        {/* Botón de Duplicar Puntos (Solo si el anuncio cargó y no se ha duplicado aún) */}
+        {/* Botón de Video Opcional para Duplicar Puntos */}
         {!hasDoubled && isRewardedLoaded && (
           <View style={styles.rewardButtonContainer}>
-             <ButtonBig
-              title="📺 ¡X2 PUNTOS!"
+            <Text style={styles.optionalAdText}>Opcional:</Text>
+            <ButtonBig
+              title="Ver video para duplicar puntos"
               onPress={handleDoublePoints}
-              backgroundColor="#9C27B0"
+              backgroundColor="#7B1FA2"
             />
           </View>
         )}
@@ -393,7 +389,15 @@ const styles = StyleSheet.create({
   },
   rewardButtonContainer: {
     alignItems: 'center',
-    marginVertical: 10,
+    marginVertical: 15,
+    marginBottom: 20,
+  },
+  optionalAdText: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 8,
+    fontStyle: 'italic',
+    textAlign: 'center',
   },
 });
 
