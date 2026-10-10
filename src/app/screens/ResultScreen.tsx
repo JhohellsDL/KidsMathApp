@@ -72,6 +72,12 @@ export const ResultScreen = ({ navigation }: Props) => {
         return 'Práctica de Restas';
       case 'comparacion':
         return 'Mayor, menor o igual';
+      case 'anterior_posterior':
+        return 'Anterior y posterior';
+      case 'suma_incompleta':
+        return 'Sumas incompletas';
+      case 'resta_incompleta':
+        return 'Restas incompletas';
       case 'suma':
       default:
         return 'Práctica de Sumas';

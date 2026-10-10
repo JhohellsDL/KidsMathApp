@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Exercise, ExerciseCategory } from '../domain/models/Exercise';
 
 interface GameState {
@@ -24,76 +26,86 @@ interface GameState {
   isLastExercise: () => boolean;
 }
 
-export const useGameStore = create<GameState>((set, get) => ({
-  // Estado inicial
-  exercises: [],
-  currentExerciseIndex: 0,
-  correctAnswers: 0,
-  totalPoints: 0,
-  isGameActive: false,
-  activeCategory: 'suma',
-
-  // Acciones
-  startGame: (exercises: Exercise[], category: ExerciseCategory = 'suma') => {
-    set({
-      exercises,
-      currentExerciseIndex: 0,
-      correctAnswers: 0,
-      totalPoints: 0,
-      isGameActive: true,
-      activeCategory: category,
-    });
-  },
-
-  answerQuestion: (isCorrect: boolean) => {
-    if (isCorrect) {
-      set(state => ({
-        correctAnswers: state.correctAnswers + 1,
-        totalPoints: state.totalPoints + 10,
-      }));
-    }
-  },
-
-  nextExercise: () => {
-    set(state => ({
-      currentExerciseIndex: state.currentExerciseIndex + 1,
-    }));
-  },
-
-  finishGame: () => {
-    set({ isGameActive: false });
-  },
-
-  resetGame: () => {
-    set({
+export const useGameStore = create<GameState>()(
+  persist(
+    (set, get) => ({
+      // Estado inicial
       exercises: [],
       currentExerciseIndex: 0,
       correctAnswers: 0,
       totalPoints: 0,
       isGameActive: false,
-    });
-  },
+      activeCategory: 'suma',
 
-  doublePoints: () => {
-    set(state => ({
-      totalPoints: state.totalPoints * 2,
-    }));
-  },
+      // Acciones
+      startGame: (exercises: Exercise[], category: ExerciseCategory = 'suma') => {
+        set({
+          exercises,
+          currentExerciseIndex: 0,
+          correctAnswers: 0,
+          isGameActive: true,
+          activeCategory: category,
+        });
+      },
 
-  // Getters
-  getCurrentExercise: () => {
-    const state = get();
-    return state.exercises[state.currentExerciseIndex] || null;
-  },
+      answerQuestion: (isCorrect: boolean) => {
+        if (isCorrect) {
+          set(state => ({
+            correctAnswers: state.correctAnswers + 1,
+            totalPoints: state.totalPoints + 10,
+          }));
+        }
+      },
 
-  getProgress: () => {
-    const state = get();
-    if (state.exercises.length === 0) return 0;
-    return ((state.currentExerciseIndex + 1) / state.exercises.length) * 100;
-  },
+      nextExercise: () => {
+        set(state => ({
+          currentExerciseIndex: state.currentExerciseIndex + 1,
+        }));
+      },
 
-  isLastExercise: () => {
-    const state = get();
-    return state.currentExerciseIndex >= state.exercises.length - 1;
-  },
-}));
+      finishGame: () => {
+        set({ isGameActive: false });
+      },
+
+      resetGame: () => {
+        set({
+          exercises: [],
+          currentExerciseIndex: 0,
+          correctAnswers: 0,
+          isGameActive: false,
+        });
+      },
+
+      doublePoints: () => {
+        set(state => ({
+          totalPoints: state.totalPoints * 2,
+        }));
+      },
+
+      // Getters
+      getCurrentExercise: () => {
+        const state = get();
+        return state.exercises[state.currentExerciseIndex] || null;
+      },
+
+      getProgress: () => {
+        const state = get();
+        if (state.exercises.length === 0) return 0;
+        return ((state.currentExerciseIndex + 1) / state.exercises.length) * 100;
+      },
+
+      isLastExercise: () => {
+        const state = get();
+        return state.currentExerciseIndex >= state.exercises.length - 1;
+      },
+    }),
+    {
+      name: 'kids_math_game_storage',
+      storage: createJSONStorage(() => AsyncStorage),
+      partialize: state => ({
+        totalPoints: state.totalPoints,
+      }),
+    },
+  ),
+);
+

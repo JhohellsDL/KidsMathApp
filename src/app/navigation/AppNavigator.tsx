@@ -6,6 +6,7 @@ import {
   HomeScreen,
   GameScreen,
   ResultScreen,
+  ProgressScreen,
 } from '../screens';
 
 export type RootStackParamList = {
@@ -13,6 +14,7 @@ export type RootStackParamList = {
   Home: undefined;
   Game: undefined;
   Result: undefined;
+  Progress: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -30,6 +32,7 @@ export const AppNavigator: React.FC = () => {
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Game" component={GameScreen} />
         <Stack.Screen name="Result" component={ResultScreen} />
+        <Stack.Screen name="Progress" component={ProgressScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -22,6 +22,7 @@ export interface Exercise<T = number | string> {
   operand1?: number;
   operand2?: number;
   operatorSymbol?: string;
+  layout?: 'horizontal' | 'vertical';
 }
 
 export interface GameSession {

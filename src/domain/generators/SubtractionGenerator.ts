@@ -31,12 +31,13 @@ export class SubtractionGenerator implements IExerciseGenerator {
 
       const correctAnswer = num1 - num2;
       const options = this.generateOptions(correctAnswer, maxNumber);
-      const difficulty = num1 <= 10 ? 1 : num1 <= 20 ? 2 : 3;
+      const isVertical = num1 >= 100 || num2 >= 100;
+      const difficulty = num1 <= 10 ? 1 : num1 <= 20 ? 2 : isVertical ? 4 : 3;
 
       exercises.push({
         id: id++,
-        question: `¿Cuánto es ${num1} − ${num2}?`,
-        subtext: 'Calcula la resta',
+        question: isVertical ? 'Resuelve la resta en tu cuaderno:' : `¿Cuánto es ${num1} − ${num2}?`,
+        subtext: isVertical ? 'Escribe el resultado' : 'Calcula la resta',
         correctAnswer,
         options,
         category: 'resta',
@@ -44,6 +45,7 @@ export class SubtractionGenerator implements IExerciseGenerator {
         operand1: num1,
         operand2: num2,
         operatorSymbol: '−',
+        layout: isVertical ? 'vertical' : 'horizontal',
         explanation: `${num1} − ${num2} = ${correctAnswer}`,
       });
     }
@@ -55,11 +57,16 @@ export class SubtractionGenerator implements IExerciseGenerator {
     const options = new Set<number>();
     options.add(correctAnswer);
 
+    const isThreeDigits = maxNumber >= 100;
+    const offsets = isThreeDigits
+      ? [-100, 100, -10, 10, -2, 2, -1, 1, -20, 20]
+      : [-3, -2, -1, 1, 2, 3];
+
     let attempts = 0;
     while (options.size < 4 && attempts < 50) {
       attempts++;
-      const offset = getRandomNumber(-3, 3);
-      const candidate = correctAnswer + offset;
+      const randomOffset = offsets[Math.floor(Math.random() * offsets.length)];
+      const candidate = correctAnswer + randomOffset;
 
       if (candidate >= 0 && candidate !== correctAnswer && candidate <= maxNumber) {
         options.add(candidate);

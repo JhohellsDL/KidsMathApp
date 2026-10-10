@@ -38,6 +38,36 @@ describe('GenerateExercisesUseCase', () => {
     });
   });
 
+  it('should generate anterior_posterior exercises when requested', () => {
+    const exercises = useCase.execute(6, 1, 10, 'anterior_posterior');
+
+    expect(exercises).toHaveLength(6);
+    exercises.forEach((ex) => {
+      expect(ex.category).toBe('anterior_posterior');
+      expect(ex.options).toHaveLength(4);
+    });
+  });
+
+  it('should generate suma_incompleta exercises when requested', () => {
+    const exercises = useCase.execute(6, 1, 10, 'suma_incompleta');
+
+    expect(exercises).toHaveLength(6);
+    exercises.forEach((ex) => {
+      expect(ex.category).toBe('suma_incompleta');
+      expect(ex.options).toHaveLength(4);
+    });
+  });
+
+  it('should generate resta_incompleta exercises when requested', () => {
+    const exercises = useCase.execute(6, 1, 10, 'resta_incompleta');
+
+    expect(exercises).toHaveLength(6);
+    exercises.forEach((ex) => {
+      expect(ex.category).toBe('resta_incompleta');
+      expect(ex.options).toHaveLength(4);
+    });
+  });
+
   it('should support executeHybrid combining static and generated exercises', () => {
     const staticExercises = [
       {
@@ -52,5 +82,33 @@ describe('GenerateExercisesUseCase', () => {
 
     const result = useCase.executeHybrid(staticExercises, 5);
     expect(result).toHaveLength(5);
+  });
+
+  it('should generate 3-digit vertical addition exercises when minNumber >= 100', () => {
+    const exercises = useCase.execute(5, 100, 999, 'suma');
+
+    expect(exercises).toHaveLength(5);
+    exercises.forEach(ex => {
+      expect(ex.category).toBe('suma');
+      expect(ex.layout).toBe('vertical');
+      expect(ex.operand1).toBeGreaterThanOrEqual(100);
+      expect(ex.operand2).toBeGreaterThanOrEqual(100);
+      expect(ex.options).toHaveLength(4);
+      expect(ex.options).toContain(ex.correctAnswer);
+    });
+  });
+
+  it('should generate 3-digit vertical subtraction exercises when minNumber >= 100', () => {
+    const exercises = useCase.execute(5, 100, 999, 'resta');
+
+    expect(exercises).toHaveLength(5);
+    exercises.forEach(ex => {
+      expect(ex.category).toBe('resta');
+      expect(ex.layout).toBe('vertical');
+      expect(ex.operand1).toBeGreaterThanOrEqual(100);
+      expect(Number(ex.correctAnswer)).toBeGreaterThanOrEqual(0);
+      expect(ex.options).toHaveLength(4);
+      expect(ex.options).toContain(ex.correctAnswer);
+    });
   });
 });
