@@ -15,16 +15,14 @@ import { useGameStore } from "../../state/gameStore";
 type Props = NativeStackScreenProps<RootStackParamList, "Game">;
 
 export const GameScreen: React.FC<Props> = ({ navigation }) => {
-  const {
-    getCurrentExercise,
-    answerQuestion,
-    nextExercise,
-    finishGame,
-    isLastExercise,
-    currentExerciseIndex,
-    exercises,
-    correctAnswers,
-  } = useGameStore();
+  const currentExercise = useGameStore(state => state.getCurrentExercise());
+  const answerQuestion = useGameStore(state => state.answerQuestion);
+  const nextExercise = useGameStore(state => state.nextExercise);
+  const finishGame = useGameStore(state => state.finishGame);
+  const isLast = useGameStore(state => state.isLastExercise());
+  const currentExerciseIndex = useGameStore(state => state.currentExerciseIndex);
+  const totalExercises = useGameStore(state => state.exercises.length);
+  const correctAnswers = useGameStore(state => state.correctAnswers);
 
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -57,7 +55,7 @@ export const GameScreen: React.FC<Props> = ({ navigation }) => {
           {
             text: "No, seguir jugando",
             style: "cancel",
-            onPress: () => {},
+            onPress: () => { },
           },
           {
             text: "Sí, salir",
@@ -82,8 +80,6 @@ export const GameScreen: React.FC<Props> = ({ navigation }) => {
     return () => backHandler.remove();
   }, [navigation, isNavigating]);
 
-  const currentExercise = getCurrentExercise();
-
   if (!currentExercise) {
     return (
       <View style={styles.container}>
@@ -105,11 +101,11 @@ export const GameScreen: React.FC<Props> = ({ navigation }) => {
 
     // Esperar 1.5 segundos antes de continuar
     setTimeout(() => {
-      if (isLastExercise()) {
+      if (isLast) {
         // Es el último ejercicio, navegar a resultados
         setIsNavigating(true);
         finishGame();
-        
+
         // Usar setTimeout para asegurar que el estado se actualice
         setTimeout(() => {
           navigation.replace("Result");
@@ -129,7 +125,7 @@ export const GameScreen: React.FC<Props> = ({ navigation }) => {
     }, 1500);
   };
 
-  const progress = ((currentExerciseIndex + 1) / exercises.length) * 100;
+  const progress = ((currentExerciseIndex + 1) / totalExercises) * 100;
 
   return (
     <View style={styles.container}>
@@ -150,7 +146,7 @@ export const GameScreen: React.FC<Props> = ({ navigation }) => {
           <View style={styles.statBadge}>
             <Text style={styles.statIcon}>📝</Text>
             <Text style={styles.statText}>
-              {currentExerciseIndex + 1}/{exercises.length}
+              {currentExerciseIndex + 1}/{totalExercises}
             </Text>
           </View>
 

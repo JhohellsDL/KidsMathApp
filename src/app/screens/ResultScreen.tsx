@@ -9,7 +9,10 @@ import {useRewardedAd} from '../../utils/useRewardedAd';
 type Props = NativeStackScreenProps<RootStackParamList, 'Result'>;
 
 export const ResultScreen: React.FC<Props> = ({navigation}) => {
-  const {exercises, correctAnswers, totalPoints, doublePoints} = useGameStore();
+  const totalExercises = useGameStore(state => state.exercises.length);
+  const correctAnswers = useGameStore(state => state.correctAnswers);
+  const totalPoints = useGameStore(state => state.totalPoints);
+  const doublePoints = useGameStore(state => state.doublePoints);
   const {showRewardedAd, loaded: isRewardedLoaded} = useRewardedAd();
   const [hasDoubled, setHasDoubled] = React.useState(false);
 
@@ -48,7 +51,7 @@ export const ResultScreen: React.FC<Props> = ({navigation}) => {
     return () => backHandler.remove();
   }, [scaleAnim, fadeAnim, navigation]);
 
-  const percentage = Math.round((correctAnswers / exercises.length) * 100);
+  const percentage = totalExercises > 0 ? Math.round((correctAnswers / totalExercises) * 100) : 0;
 
   const getMessage = () => {
     if (percentage === 100) return '¡Perfecto! 🏆';
@@ -115,7 +118,7 @@ export const ResultScreen: React.FC<Props> = ({navigation}) => {
               <View style={styles.statIconContainer}>
                 <Text style={styles.statIcon}>📝</Text>
               </View>
-              <Text style={styles.statValue}>{exercises.length}</Text>
+              <Text style={styles.statValue}>{totalExercises}</Text>
               <Text style={styles.statLabel}>Total</Text>
             </View>
 

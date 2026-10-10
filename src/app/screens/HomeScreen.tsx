@@ -9,7 +9,9 @@ import {GenerateExercisesUseCase} from '../../domain/usecases/generateExercises'
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 export const HomeScreen: React.FC<Props> = ({navigation}) => {
-  const {totalPoints, resetGame} = useGameStore();
+  const totalPoints = useGameStore(state => state.totalPoints);
+  const resetGame = useGameStore(state => state.resetGame);
+  const startGame = useGameStore(state => state.startGame);
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   // Estados de configuración
@@ -55,7 +57,7 @@ export const HomeScreen: React.FC<Props> = ({navigation}) => {
     }
 
     const exercises = new GenerateExercisesUseCase().execute(exerciseCount, min, max);
-    useGameStore.getState().startGame(exercises);
+    startGame(exercises);
     setIsSettingsVisible(false);
     navigation.navigate('Game');
   };
