@@ -82,8 +82,8 @@ android {
         applicationId "com.kidsmathapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 7
-        versionName "1.2.0"
+        versionCode 8
+        versionName "2.0.0"
     }
     signingConfigs {
         debug {
@@ -93,22 +93,27 @@ android {
             keyPassword 'android'
         }
         release {
-            def envFile = rootProject.file("../.env")
-            def env = new Properties()
-            if (envFile.exists()) {
-                env.load(new FileInputStream(envFile))
+            def localPropsFile = rootProject.file("local.properties")
+            def localProps = new Properties()
+            if (localPropsFile.exists()) {
+                localProps.load(new FileInputStream(localPropsFile))
             }
 
-            if (env.getProperty('MYAPP_UPLOAD_STORE_FILE')) {
-                storeFile file(env.getProperty('MYAPP_UPLOAD_STORE_FILE'))
-                storePassword env.getProperty('MYAPP_UPLOAD_STORE_PASSWORD')
-                keyAlias env.getProperty('MYAPP_UPLOAD_KEY_ALIAS')
-                keyPassword env.getProperty('MYAPP_UPLOAD_KEY_PASSWORD')
-            } else if (project.hasProperty('MYAPP_UPLOAD_STORE_FILE')) {
-                storeFile file(MYAPP_UPLOAD_STORE_FILE)
-                storePassword MYAPP_UPLOAD_STORE_PASSWORD
-                keyAlias MYAPP_UPLOAD_KEY_ALIAS
-                keyPassword MYAPP_UPLOAD_KEY_PASSWORD
+            def envFile = rootProject.file("../.env")
+            if (envFile.exists()) {
+                localProps.load(new FileInputStream(envFile))
+            }
+
+            def storeFileProp = localProps.getProperty('MYAPP_UPLOAD_STORE_FILE') ?: (project.findProperty('MYAPP_UPLOAD_STORE_FILE') ?: null)
+            def storePasswordProp = localProps.getProperty('MYAPP_UPLOAD_STORE_PASSWORD') ?: (project.findProperty('MYAPP_UPLOAD_STORE_PASSWORD') ?: null)
+            def keyAliasProp = localProps.getProperty('MYAPP_UPLOAD_KEY_ALIAS') ?: (project.findProperty('MYAPP_UPLOAD_KEY_ALIAS') ?: null)
+            def keyPasswordProp = localProps.getProperty('MYAPP_UPLOAD_KEY_PASSWORD') ?: (project.findProperty('MYAPP_UPLOAD_KEY_PASSWORD') ?: null)
+
+            if (storeFileProp) {
+                storeFile file(storeFileProp)
+                storePassword storePasswordProp
+                keyAlias keyAliasProp
+                keyPassword keyPasswordProp
             }
         }
     }
