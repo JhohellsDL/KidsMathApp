@@ -2,11 +2,13 @@ import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native';
 import { COLORS } from '../../theme/colors';
 
+import { DifficultyLevel } from '../../../domain/models/Progress';
+
 interface SettingsModalProps {
   visible: boolean;
-  difficulty: 'easy' | 'medium' | 'hard';
+  difficulty: DifficultyLevel;
   exerciseCount: number;
-  onDifficultyChange: (diff: 'easy' | 'medium' | 'hard') => void;
+  onDifficultyChange: (diff: DifficultyLevel) => void;
   onExerciseCountChange: (count: number) => void;
   onClose: () => void;
 }
@@ -19,7 +21,7 @@ export const SettingsModal = ({
   onExerciseCountChange,
   onClose,
 }: SettingsModalProps) => {
-  const getDifficultyLabel = (diff: string) => {
+  const getDifficultyLabel = (diff: DifficultyLevel) => {
     switch (diff) {
       case 'easy':
         return 'Fácil (1 a 10)';
@@ -27,6 +29,8 @@ export const SettingsModal = ({
         return 'Medio (1 a 20)';
       case 'hard':
         return 'Avanzado (1 a 50)';
+      case 'expert':
+        return '3 Cifras / Modo Vertical (100 a 999) 📝';
       default:
         return '';
     }
@@ -47,7 +51,7 @@ export const SettingsModal = ({
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Rango de números:</Text>
             <View style={styles.optionsRow}>
-              {(['easy', 'medium', 'hard'] as const).map(diff => (
+              {(['easy', 'medium', 'hard', 'expert'] as const).map(diff => (
                 <TouchableOpacity
                   key={diff}
                   style={[
@@ -61,10 +65,12 @@ export const SettingsModal = ({
                       difficulty === diff && styles.chipTextActive,
                     ]}>
                     {diff === 'easy'
-                      ? '1 - 10'
+                      ? '1-10'
                       : diff === 'medium'
-                        ? '1 - 20'
-                        : '1 - 50'}
+                        ? '1-20'
+                        : diff === 'hard'
+                          ? '1-50'
+                          : '3 Cifras'}
                   </Text>
                 </TouchableOpacity>
               ))}

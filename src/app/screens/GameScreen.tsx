@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, BackHandler } from 'react-native';
+import { View, Text, StyleSheet, Animated, BackHandler, AppState, AppStateStatus } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import {
@@ -7,9 +7,11 @@ import {
   GameHeader,
   ComparisonArena,
   FeedbackBanner,
+  VerticalOperationView,
   ExitConfirmModal,
 } from '../../ui/components';
 import { useGameStore } from '../../state/gameStore';
+import { useProgressStore } from '../../state/progressStore';
 import { validateExerciseAnswer, ValidationFeedback } from '../../domain/validators/exerciseValidator';
 import { COLORS } from '../../ui/theme/colors';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -60,6 +62,20 @@ export const GameScreen = ({ navigation }: Props) => {
     ]).start();
   }, [currentExerciseIndex, slideAnim, fadeAnim]);
 
+  // Manejo de pausa/reanudación automática con ciclo de vida AppState
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      if (nextAppState === 'background' || nextAppState === 'inactive') {
+        useProgressStore.getState().pauseSession();
+      } else if (nextAppState === 'active') {
+        useProgressStore.getState().resumeSession();
+      }
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => subscription.remove();
+  }, []);
+
   useEffect(() => {
     const backAction = () => {
       if (isNavigating) return true;
@@ -73,6 +89,7 @@ export const GameScreen = ({ navigation }: Props) => {
 
   const handleConfirmExit = () => {
     setIsExitModalVisible(false);
+    useProgressStore.getState().finishSession(false);
     navigation.reset({
       index: 0,
       routes: [{ name: 'Home' }],
@@ -96,6 +113,7 @@ export const GameScreen = ({ navigation }: Props) => {
     setShowFeedback(true);
 
     answerQuestion(validation.isCorrect);
+    useProgressStore.getState().recordAnswer(validation.isCorrect);
 
     // Tiempo de permanencia dinámico: rápido para acierto, tiempo de lectura para error
     const dwellTime = validation.isCorrect ? 1000 : 1750;
@@ -103,6 +121,7 @@ export const GameScreen = ({ navigation }: Props) => {
     setTimeout(() => {
       if (isLast) {
         setIsNavigating(true);
+        useProgressStore.getState().finishSession(true);
         finishGame();
         setTimeout(() => {
           navigation.replace('Result');
@@ -159,6 +178,14 @@ export const GameScreen = ({ navigation }: Props) => {
               selectedOption={selectedOption}
               showFeedback={showFeedback}
               isCorrect={feedbackInfo?.isCorrect}
+            />
+          ) : currentExercise.layout === 'vertical' ||
+            (currentExercise.operand1 !== undefined && currentExercise.operand1 >= 100) ? (
+            <VerticalOperationView
+              operand1={currentExercise.operand1}
+              operand2={currentExercise.operand2}
+              operatorSymbol={currentExercise.operatorSymbol}
+              category={currentExercise.category}
             />
           ) : (
             <View style={styles.operationBox}>

@@ -23,6 +23,7 @@ const mockExercises: Exercise[] = [
 describe('useGameStore', () => {
   beforeEach(() => {
     useGameStore.getState().resetGame();
+    useGameStore.setState({ totalPoints: 0 });
   });
 
   it('should initialize and start the game with active category', () => {

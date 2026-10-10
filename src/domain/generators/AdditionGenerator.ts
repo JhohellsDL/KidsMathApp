@@ -27,12 +27,13 @@ export class AdditionGenerator implements IExerciseGenerator {
 
       const correctAnswer = num1 + num2;
       const options = this.generateOptions(correctAnswer, minNumber, maxNumber);
-      const difficulty = correctAnswer <= 10 ? 1 : correctAnswer <= 20 ? 2 : 3;
+      const isVertical = num1 >= 100 || num2 >= 100;
+      const difficulty = correctAnswer <= 10 ? 1 : correctAnswer <= 20 ? 2 : isVertical ? 4 : 3;
 
       exercises.push({
         id: id++,
-        question: `¿Cuánto es ${num1} + ${num2}?`,
-        subtext: 'Calcula la suma',
+        question: isVertical ? 'Resuelve la suma en tu cuaderno:' : `¿Cuánto es ${num1} + ${num2}?`,
+        subtext: isVertical ? 'Escribe el resultado' : 'Calcula la suma',
         correctAnswer,
         options,
         category: 'suma',
@@ -40,6 +41,7 @@ export class AdditionGenerator implements IExerciseGenerator {
         operand1: num1,
         operand2: num2,
         operatorSymbol: '+',
+        layout: isVertical ? 'vertical' : 'horizontal',
         explanation: `${num1} + ${num2} = ${correctAnswer}`,
       });
     }
@@ -55,13 +57,18 @@ export class AdditionGenerator implements IExerciseGenerator {
     const options = new Set<number>();
     options.add(correctAnswer);
 
+    const isThreeDigits = correctAnswer >= 100;
+    const offsets = isThreeDigits
+      ? [-100, 100, -10, 10, -2, 2, -1, 1, -20, 20]
+      : [-3, -2, -1, 1, 2, 3];
+
     let attempts = 0;
     while (options.size < 4 && attempts < 50) {
       attempts++;
-      const offset = getRandomNumber(-3, 3);
-      const candidate = correctAnswer + offset;
+      const randomOffset = offsets[Math.floor(Math.random() * offsets.length)];
+      const candidate = correctAnswer + randomOffset;
 
-      if (candidate > 0 && candidate !== correctAnswer && candidate <= maxNumber * 2 + 5) {
+      if (candidate > 0 && candidate !== correctAnswer && candidate <= maxNumber * 2 + 50) {
         options.add(candidate);
       }
     }
@@ -69,7 +76,10 @@ export class AdditionGenerator implements IExerciseGenerator {
     // Fallback garantizado si no se llenaron 4 opciones únicas
     let fallbackOffset = 1;
     while (options.size < 4) {
-      options.add(correctAnswer + fallbackOffset);
+      const candidate = correctAnswer + fallbackOffset;
+      if (!options.has(candidate)) {
+        options.add(candidate);
+      }
       fallbackOffset++;
     }
 

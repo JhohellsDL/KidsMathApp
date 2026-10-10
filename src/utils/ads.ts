@@ -15,10 +15,10 @@ export const AdConfig = {
   android: {
     banner: __DEV__
       ? TestIds.BANNER
-      : 'ca-app-pub-8897050281816485/BANNER_ID',
+      : 'ca-app-pub-8897050281816485/4186754997',
     rewarded: __DEV__
       ? TestIds.REWARDED
-      : 'ca-app-pub-8897050281816485/REWARDED_ID',
+      : 'ca-app-pub-8897050281816485/2768324988',
   },
   ios: {
     banner: __DEV__

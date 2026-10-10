@@ -83,4 +83,32 @@ describe('GenerateExercisesUseCase', () => {
     const result = useCase.executeHybrid(staticExercises, 5);
     expect(result).toHaveLength(5);
   });
+
+  it('should generate 3-digit vertical addition exercises when minNumber >= 100', () => {
+    const exercises = useCase.execute(5, 100, 999, 'suma');
+
+    expect(exercises).toHaveLength(5);
+    exercises.forEach(ex => {
+      expect(ex.category).toBe('suma');
+      expect(ex.layout).toBe('vertical');
+      expect(ex.operand1).toBeGreaterThanOrEqual(100);
+      expect(ex.operand2).toBeGreaterThanOrEqual(100);
+      expect(ex.options).toHaveLength(4);
+      expect(ex.options).toContain(ex.correctAnswer);
+    });
+  });
+
+  it('should generate 3-digit vertical subtraction exercises when minNumber >= 100', () => {
+    const exercises = useCase.execute(5, 100, 999, 'resta');
+
+    expect(exercises).toHaveLength(5);
+    exercises.forEach(ex => {
+      expect(ex.category).toBe('resta');
+      expect(ex.layout).toBe('vertical');
+      expect(ex.operand1).toBeGreaterThanOrEqual(100);
+      expect(Number(ex.correctAnswer)).toBeGreaterThanOrEqual(0);
+      expect(ex.options).toHaveLength(4);
+      expect(ex.options).toContain(ex.correctAnswer);
+    });
+  });
 });

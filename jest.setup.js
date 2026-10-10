@@ -67,3 +67,28 @@ jest.mock('@react-navigation/native-stack', () => {
   };
 });
 
+const mockAsyncStorageStore = new Map();
+
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  __esModule: true,
+  default: {
+    setItem: jest.fn(async (key, value) => {
+      mockAsyncStorageStore.set(key, String(value));
+    }),
+    getItem: jest.fn(async key => {
+      return mockAsyncStorageStore.get(key) ?? null;
+    }),
+    removeItem: jest.fn(async key => {
+      mockAsyncStorageStore.delete(key);
+    }),
+    clear: jest.fn(async () => {
+      mockAsyncStorageStore.clear();
+    }),
+    getAllKeys: jest.fn(async () => {
+      return Array.from(mockAsyncStorageStore.keys());
+    }),
+  },
+}));
+
+
+
