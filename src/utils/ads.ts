@@ -1,46 +1,52 @@
 import { Platform } from 'react-native';
-import { TestIds } from 'react-native-google-mobile-ads';
-import {
-  ANDROID_BANNER_ID,
-  ANDROID_INTERSTITIAL_ID,
-  ANDROID_REWARDED_ID,
-  IOS_BANNER_ID,
-  IOS_INTERSTITIAL_ID,
-  IOS_REWARDED_ID,
-} from '@env';
+import mobileAds, {
+  MaxAdContentRating,
+  TestIds,
+} from 'react-native-google-mobile-ads';
 
 /**
- * Configuración de IDs de anuncios para AdMob
+ * Configuración centralizada de IDs de anuncios para AdMob
  * 
- * IMPORTANTE: Actualmente usa IDs de PRUEBA de Google
- * Cuando tengas tu cuenta de AdMob, reemplaza con tus IDs reales
+ * En modo desarrollo (__DEV__) usa siempre los TestIds oficiales de Google
+ * para evitar penalizaciones por tráfico inválido.
+ * En producción (Release) utiliza los Ad Unit IDs reales de tu cuenta de AdMob.
  */
 export const AdConfig = {
-  // IDs de Android
   android: {
-    // ID de prueba de Google - Reemplazar con tu ID real
     banner: __DEV__
       ? TestIds.BANNER
-      : ANDROID_BANNER_ID,
-    interstitial: __DEV__
-      ? TestIds.INTERSTITIAL
-      : ANDROID_INTERSTITIAL_ID,
+      : 'ca-app-pub-8897050281816485/BANNER_ID',
     rewarded: __DEV__
       ? TestIds.REWARDED
-      : ANDROID_REWARDED_ID,
+      : 'ca-app-pub-8897050281816485/REWARDED_ID',
   },
-  // IDs de iOS
   ios: {
     banner: __DEV__
       ? TestIds.BANNER
-      : IOS_BANNER_ID,
-    interstitial: __DEV__
-      ? TestIds.INTERSTITIAL
-      : IOS_INTERSTITIAL_ID,
+      : 'ca-app-pub-8897050281816485/BANNER_ID',
     rewarded: __DEV__
       ? TestIds.REWARDED
-      : IOS_REWARDED_ID,
+      : 'ca-app-pub-8897050281816485/REWARDED_ID',
   },
+};
+
+/**
+ * Inicialización centralizada de AdMob SDK con cumplimiento COPPA
+ */
+export const initializeAds = async (): Promise<void> => {
+  try {
+    await mobileAds().setRequestConfiguration({
+      maxAdContentRating: MaxAdContentRating.G,
+      tagForChildDirectedTreatment: true,
+      tagForUnderAgeOfConsent: true,
+    });
+
+    await mobileAds().initialize();
+  } catch (error) {
+    if (__DEV__) {
+      console.warn('Error inicializando AdMob SDK:', error);
+    }
+  }
 };
 
 /**
@@ -50,15 +56,6 @@ export const getBannerId = (): string => {
   return Platform.OS === 'android'
     ? AdConfig.android.banner
     : AdConfig.ios.banner;
-};
-
-/**
- * Obtener ID de intersticial según la plataforma
- */
-export const getInterstitialId = (): string => {
-  return Platform.OS === 'android'
-    ? AdConfig.android.interstitial
-    : AdConfig.ios.interstitial;
 };
 
 /**
@@ -80,4 +77,5 @@ export const childSafeAdOptions = {
   // Keywords relacionadas con educación
   keywords: ['education', 'kids', 'math', 'learning', 'children'],
 };
+
 

@@ -2,6 +2,10 @@
   "name": "KidsMathApp",
   "displayName": "KidsMathApp",
   "react-native-google-mobile-ads": {
-    "android_app_id": "ca-app-pub-8897050281816485~6054524378"
+    "android_app_id": "ca-app-pub-8897050281816485~6054524378",
+    "ios_app_id": "ca-app-pub-8897050281816485~6054524378",
+    "tag_for_child_directed_treatment": true,
+    "tag_for_under_age_of_consent": true,
+    "max_ad_content_rating": "G"
   }
 }

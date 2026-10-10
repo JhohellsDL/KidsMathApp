@@ -1,33 +1,78 @@
-import React, {useEffect, useRef} from 'react';
-import {View, Text, StyleSheet, Animated, Modal, TouchableOpacity} from 'react-native';
-import {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {RootStackParamList} from '../navigation/AppNavigator';
-import {ButtonBig, Avatar} from '../../ui/components';
-import {useGameStore} from '../../state/gameStore';
-import {GenerateExercisesUseCase} from '../../domain/usecases/generateExercises';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Animated,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigation/AppNavigator';
+import {
+  ButtonBig,
+  Avatar,
+  CategoryCard,
+  SettingsModal,
+} from '../../ui/components';
+import { useGameStore } from '../../state/gameStore';
+import { GenerateExercisesUseCase } from '../../domain/usecases/generateExercises';
+import { ExerciseCategory } from '../../domain/models/Exercise';
+import { COLORS } from '../../ui/theme/colors';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
-export const HomeScreen: React.FC<Props> = ({navigation}) => {
-  const {totalPoints, resetGame} = useGameStore();
-  const pulseAnim = useRef(new Animated.Value(1)).current;
+const CATEGORIES = [
+  {
+    id: 'suma' as ExerciseCategory,
+    title: 'Sumas',
+    subtitle: 'Aprende a sumar números',
+    badge: '1 + 2 = 3',
+    icon: '➕',
+    color: '#0284C7',
+  },
+  {
+    id: 'resta' as ExerciseCategory,
+    title: 'Restas',
+    subtitle: 'Practica restas sin negativos',
+    badge: '5 − 2 = 3',
+    icon: '➖',
+    color: '#E11D48',
+  },
+  {
+    id: 'comparacion' as ExerciseCategory,
+    title: 'Mayor, menor o igual',
+    subtitle: 'Compara números con >, < o =',
+    badge: '7 > 4',
+    icon: '⚖️',
+    color: '#7C3AED',
+  },
+];
 
-  // Estados de configuración
-  const [isSettingsVisible, setIsSettingsVisible] = React.useState(false);
-  const [difficulty, setDifficulty] = React.useState<'easy' | 'medium' | 'hard'>('easy');
-  const [exerciseCount, setExerciseCount] = React.useState<number>(10);
+export const HomeScreen = ({ navigation }: Props) => {
+  const totalPoints = useGameStore(state => state.totalPoints);
+  const resetGame = useGameStore(state => state.resetGame);
+  const startGame = useGameStore(state => state.startGame);
+  const insets = useSafeAreaInsets();
+
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory>('suma');
+  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy');
+  const [exerciseCount, setExerciseCount] = useState<number>(10);
+  const [isSettingsVisible, setIsSettingsVisible] = useState(false);
 
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
-          toValue: 1.1,
-          duration: 1000,
+          toValue: 1.03,
+          duration: 1200,
           useNativeDriver: true,
         }),
         Animated.timing(pulseAnim, {
           toValue: 1,
-          duration: 1000,
+          duration: 1200,
           useNativeDriver: true,
         }),
       ]),
@@ -36,194 +81,99 @@ export const HomeScreen: React.FC<Props> = ({navigation}) => {
 
   const handleStartGame = () => {
     resetGame();
-    
-    // Configurar rango basado en dificultad
-    let min = 1;
-    let max = 10;
-    
-    switch (difficulty) {
-      case 'medium':
-        max = 20;
-        break;
-      case 'hard':
-        max = 50;
-        break;
-      case 'easy':
-      default:
-        // Mantener defaults (1-10)
-        break;
-    }
 
-    const exercises = new GenerateExercisesUseCase().execute(exerciseCount, min, max);
-    useGameStore.getState().startGame(exercises);
-    setIsSettingsVisible(false);
+    const max = difficulty === 'hard' ? 50 : difficulty === 'medium' ? 20 : 10;
+    const generator = new GenerateExercisesUseCase();
+    const exercises = generator.execute(exerciseCount, 1, max, selectedCategory);
+
+    startGame(exercises, selectedCategory);
     navigation.navigate('Game');
   };
 
-  const getDifficultyLabel = (diff: string) => {
-    switch (diff) {
-      case 'easy': return 'Fácil (1-10)';
-      case 'medium': return 'Medio (1-20)';
-      case 'hard': return 'Difícil (1-50)';
-      default: return '';
-    }
-  };
-
-  const getDifficultyText = (diff: string) => {
-    switch(diff) {
-      case 'easy': return 'Fácil';
-      case 'medium': return 'Medio';
-      case 'hard': return 'Difícil';
-      default: return 'Fácil';
-    }
+  const getDifficultyName = () => {
+    return difficulty === 'easy' ? 'Fácil (1-10)' : difficulty === 'medium' ? 'Medio (1-20)' : 'Avanzado (1-50)';
   };
 
   return (
-    <View style={styles.container}>
-      {/* Decoraciones matemáticas flotantes */}
-      <View style={styles.decorationsContainer}>
-        <Text style={[styles.mathSymbol, styles.symbol1]}>+</Text>
-        <Text style={[styles.mathSymbol, styles.symbol2]}>×</Text>
-        <Text style={[styles.mathSymbol, styles.symbol3]}>÷</Text>
-        <Text style={[styles.mathSymbol, styles.symbol4]}>=</Text>
-        <Text style={[styles.mathSymbol, styles.symbol5]}>−</Text>
-      </View>
-
-      {/* Header con avatar */}
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom + 32 }]}>
+      {/* Header */}
       <View style={styles.header}>
-        <View style={styles.avatarContainer}>
+        <View style={styles.avatarRow}>
           <View style={styles.avatarCircle}>
-            <Avatar size={70} />
+            <Avatar size={48} />
           </View>
           <View style={styles.pointsBadge}>
-            <Text style={styles.starIcon}>⭐</Text>
-            <Text style={styles.pointsValue}>{totalPoints}</Text>
+            <Text style={styles.starEmoji}>⭐</Text>
+            <Text style={styles.pointsText}>{totalPoints}</Text>
           </View>
         </View>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.settingsButton}
-          onPress={() => setIsSettingsVisible(true)}>
+          onPress={() => setIsSettingsVisible(true)}
+          activeOpacity={0.7}>
           <Text style={styles.settingsIcon}>⚙️</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Contenido central */}
-      <View style={styles.content}>
-        {/* Tarjeta de bienvenida mejorada */}
-        <View style={styles.welcomeCard}>
-          <Text style={styles.waveEmoji}>👋</Text>
-          <Text style={styles.welcomeTitle}>¡Hola!</Text>
-          <Text style={styles.welcomeSubtitle}>
-            ¿Listo para practicar sumas?
-          </Text>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}>
+        <View style={styles.titleSection}>
+          <Text style={styles.greeting}>¡Hora de jugar! 👋</Text>
+          <Text style={styles.title}>Elige tu actividad</Text>
+          <Text style={styles.subtitle}>Selecciona el tipo de práctica matemática de hoy</Text>
         </View>
 
-        {/* Círculo decorativo con iconos matemáticos */}
-        <View style={styles.decorativeCircle}>
-          <Text style={styles.bigNumber}>123</Text>
-          <View style={styles.miniIconsContainer}>
-            <Text style={styles.miniIcon}>+</Text>
-            <Text style={styles.miniIcon}>−</Text>
-            <Text style={styles.miniIcon}>=</Text>
-          </View>
+        {/* Tarjetas de categorías */}
+        <View style={styles.categoriesList}>
+          {CATEGORIES.map(cat => (
+            <CategoryCard
+              key={cat.id}
+              category={cat}
+              isSelected={selectedCategory === cat.id}
+              onSelect={() => setSelectedCategory(cat.id)}
+            />
+          ))}
         </View>
 
-        {/* Estadística rápida */}
-        <View style={styles.statsRow}>
-          <View style={styles.statCard}>
-            <Text style={styles.statEmoji}>🎯</Text>
-            <Text style={styles.statLabel}>Practicar</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statEmoji}>🏆</Text>
-            <Text style={styles.statLabel}>Ganar</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statEmoji}>🌟</Text>
-            <Text style={styles.statLabel}>Aprender</Text>
-          </View>
+        {/* Barra de ajustes rápidos */}
+        <View style={styles.quickBar}>
+          <TouchableOpacity
+            style={styles.quickItem}
+            onPress={() => setIsSettingsVisible(true)}>
+            <Text style={styles.quickLabel}>Dificultad:</Text>
+            <Text style={styles.quickValue}>{getDifficultyName()}</Text>
+          </TouchableOpacity>
+          <View style={styles.quickDivider} />
+          <TouchableOpacity
+            style={styles.quickItem}
+            onPress={() => setIsSettingsVisible(true)}>
+            <Text style={styles.quickLabel}>Ejercicios:</Text>
+            <Text style={styles.quickValue}>{exerciseCount}</Text>
+          </TouchableOpacity>
         </View>
-      </View>
 
-      {/* Botón principal */}
-      <Animated.View
-        style={[
-          styles.buttonContainer,
-          {transform: [{scale: pulseAnim}]},
-        ]}>
-        <ButtonBig
-          title="🎮 ¡EMPEZAR!"
-          onPress={handleStartGame}
-          backgroundColor="#4CAF50"
-        />
-      </Animated.View>
+        {/* Botón principal */}
+        <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+          <ButtonBig
+            title="🎮 ¡EMPEZAR AHORA!"
+            onPress={handleStartGame}
+            backgroundColor={COLORS.success}
+          />
+        </Animated.View>
+      </ScrollView>
 
       {/* Modal de Configuración */}
-      <Modal
+      <SettingsModal
         visible={isSettingsVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setIsSettingsVisible(false)}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Configuración ⚙️</Text>
-            
-            {/* Selector de Dificultad */}
-            <View style={styles.settingSection}>
-              <Text style={styles.settingLabel}>Dificultad:</Text>
-              <View style={styles.optionsRow}>
-                {(['easy', 'medium', 'hard'] as const).map((diff) => (
-                  <TouchableOpacity
-                    key={diff}
-                    style={[
-                      styles.optionButton,
-                      difficulty === diff && styles.optionButtonSelected
-                    ]}
-                    onPress={() => setDifficulty(diff)}>
-                    <Text style={[
-                      styles.optionText,
-                      difficulty === diff && styles.optionTextSelected
-                    ]}>
-                      {getDifficultyText(diff)}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-              <Text style={styles.helperText}>{getDifficultyLabel(difficulty)}</Text>
-            </View>
-
-            {/* Selector de Cantidad */}
-            <View style={styles.settingSection}>
-              <Text style={styles.settingLabel}>Ejercicios:</Text>
-              <View style={styles.optionsRow}>
-                {[5, 10, 20].map((count) => (
-                  <TouchableOpacity
-                    key={count}
-                    style={[
-                      styles.optionButton,
-                      exerciseCount === count && styles.optionButtonSelected
-                    ]}
-                    onPress={() => setExerciseCount(count)}>
-                    <Text style={[
-                      styles.optionText,
-                      exerciseCount === count && styles.optionTextSelected
-                    ]}>
-                      {count}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setIsSettingsVisible(false)}>
-              <Text style={styles.closeButtonText}>Listo 👍</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+        difficulty={difficulty}
+        exerciseCount={exerciseCount}
+        onDifficultyChange={setDifficulty}
+        onExerciseCountChange={setExerciseCount}
+        onClose={() => setIsSettingsVisible(false)}
+      />
     </View>
   );
 };
@@ -231,287 +181,121 @@ export const HomeScreen: React.FC<Props> = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#E3F2FD',
-    position: 'relative',
+    backgroundColor: COLORS.background,
   },
-  // Decoraciones matemáticas flotantes
-  decorationsContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 0,
-  },
-  mathSymbol: {
-    position: 'absolute',
-    fontSize: 40,
-    fontWeight: 'bold',
-    opacity: 0.1,
-    color: '#1976D2',
-  },
-  symbol1: {
-    top: 80,
-    left: 30,
-  },
-  symbol2: {
-    top: 150,
-    right: 40,
-  },
-  symbol3: {
-    bottom: 200,
-    left: 50,
-  },
-  symbol4: {
-    bottom: 300,
-    right: 30,
-  },
-  symbol5: {
-    top: 250,
-    left: 20,
-  },
-  // Header
   header: {
-    marginTop: 50,
+    paddingHorizontal: 20,
+    paddingBottom: 14,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    zIndex: 1,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
   },
-  avatarContainer: {
+  avatarRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 10,
   },
   avatarCircle: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 50,
-    padding: 8,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 3},
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
+    backgroundColor: COLORS.card,
+    borderRadius: 25,
+    padding: 2,
+    borderWidth: 1.5,
+    borderColor: COLORS.border,
   },
   pointsBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1976D2',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 25,
-    marginLeft: -10,
-    borderWidth: 3,
-    borderColor: '#FFFFFF',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.15,
-    shadowRadius: 3,
+    backgroundColor: COLORS.warningLight,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: COLORS.warningBorder,
   },
-  starIcon: {
-    fontSize: 20,
-    marginRight: 5,
+  starEmoji: {
+    fontSize: 15,
+    marginRight: 4,
   },
-  pointsValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
-  // Contenido
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    zIndex: 1,
-  },
-  welcomeCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 25,
-    padding: 25,
-    alignItems: 'center',
-    width: '100%',
-    maxWidth: 400,
-    elevation: 8,
-    shadowColor: '#1976D2',
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    borderWidth: 3,
-    borderColor: '#BBDEFB',
-  },
-  waveEmoji: {
-    fontSize: 48,
-    marginBottom: 10,
-  },
-  welcomeTitle: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    color: '#1976D2',
-    marginBottom: 8,
-  },
-  welcomeSubtitle: {
-    fontSize: 20,
-    color: '#546E7A',
-    textAlign: 'center',
-    fontWeight: '600',
-  },
-  decorativeCircle: {
-    width: 180,
-    height: 180,
-    borderRadius: 90,
-    backgroundColor: '#FFD700',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 30,
-    marginBottom: 20,
-    elevation: 5,
-    shadowColor: '#FF9800',
-    shadowOffset: {width: 0, height: 3},
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    borderWidth: 5,
-    borderColor: '#FFFFFF',
-  },
-  bigNumber: {
-    fontSize: 60,
-    fontWeight: 'bold',
-    color: '#8B4513',
-  },
-  miniIconsContainer: {
-    flexDirection: 'row',
-    marginTop: 5,
-  },
-  miniIcon: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#8B4513',
-    marginHorizontal: 5,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-    marginTop: 20,
-  },
-  statCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 15,
-    padding: 15,
-    alignItems: 'center',
-    minWidth: 90,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-  },
-  statEmoji: {
-    fontSize: 32,
-    marginBottom: 5,
-  },
-  statLabel: {
-    fontSize: 14,
-    color: '#546E7A',
-    fontWeight: '600',
-  },
-  buttonContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 40,
-    zIndex: 1,
+  pointsText: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: COLORS.warning,
   },
   settingsButton: {
-    backgroundColor: 'white',
-    padding: 10,
-    borderRadius: 50,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
+    backgroundColor: '#F1F5F9',
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   settingsIcon: {
-    fontSize: 24,
+    fontSize: 20,
   },
-  modalOverlay: {
+  scroll: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
   },
-  modalContent: {
-    backgroundColor: 'white',
-    borderRadius: 25,
-    padding: 25,
-    width: '100%',
-    maxWidth: 340,
-    alignItems: 'center',
-    elevation: 10,
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 35,
   },
-  modalTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1976D2',
-    marginBottom: 25,
+  titleSection: {
+    marginBottom: 18,
   },
-  settingSection: {
-    width: '100%',
+  greeting: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.primary,
+    marginBottom: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: COLORS.text,
+    letterSpacing: -0.5,
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: COLORS.textMuted,
+  },
+  categoriesList: {
+    gap: 12,
     marginBottom: 20,
   },
-  settingLabel: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 10,
-    marginLeft: 5,
-  },
-  optionsRow: {
+  quickBar: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 10,
+    alignItems: 'center',
+    backgroundColor: COLORS.card,
+    borderRadius: 16,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    marginBottom: 20,
   },
-  optionButton: {
+  quickItem: {
     flex: 1,
-    paddingVertical: 10,
-    borderRadius: 15,
-    backgroundColor: '#F5F5F5',
-    borderWidth: 2,
-    borderColor: '#E0E0E0',
     alignItems: 'center',
   },
-  optionButtonSelected: {
-    backgroundColor: '#E3F2FD',
-    borderColor: '#2196F3',
+  quickDivider: {
+    width: 1,
+    height: 28,
+    backgroundColor: COLORS.border,
   },
-  optionText: {
-    fontSize: 16,
-    color: '#757575',
+  quickLabel: {
+    fontSize: 11,
+    color: COLORS.textMuted,
     fontWeight: '600',
+    marginBottom: 2,
   },
-  optionTextSelected: {
-    color: '#1976D2',
-    fontWeight: 'bold',
-  },
-  helperText: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 5,
-    marginLeft: 5,
-    fontStyle: 'italic',
-  },
-  closeButton: {
-    backgroundColor: '#4CAF50',
-    paddingHorizontal: 40,
-    paddingVertical: 12,
-    borderRadius: 25,
-    marginTop: 10,
-    elevation: 3,
-  },
-  closeButtonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
+  quickValue: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.text,
   },
 });
