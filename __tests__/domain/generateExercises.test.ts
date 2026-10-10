@@ -38,6 +38,36 @@ describe('GenerateExercisesUseCase', () => {
     });
   });
 
+  it('should generate anterior_posterior exercises when requested', () => {
+    const exercises = useCase.execute(6, 1, 10, 'anterior_posterior');
+
+    expect(exercises).toHaveLength(6);
+    exercises.forEach((ex) => {
+      expect(ex.category).toBe('anterior_posterior');
+      expect(ex.options).toHaveLength(4);
+    });
+  });
+
+  it('should generate suma_incompleta exercises when requested', () => {
+    const exercises = useCase.execute(6, 1, 10, 'suma_incompleta');
+
+    expect(exercises).toHaveLength(6);
+    exercises.forEach((ex) => {
+      expect(ex.category).toBe('suma_incompleta');
+      expect(ex.options).toHaveLength(4);
+    });
+  });
+
+  it('should generate resta_incompleta exercises when requested', () => {
+    const exercises = useCase.execute(6, 1, 10, 'resta_incompleta');
+
+    expect(exercises).toHaveLength(6);
+    exercises.forEach((ex) => {
+      expect(ex.category).toBe('resta_incompleta');
+      expect(ex.options).toHaveLength(4);
+    });
+  });
+
   it('should support executeHybrid combining static and generated exercises', () => {
     const staticExercises = [
       {

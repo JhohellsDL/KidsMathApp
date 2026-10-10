@@ -163,13 +163,13 @@ export const GameScreen = ({ navigation }: Props) => {
           ) : (
             <View style={styles.operationBox}>
               <Text style={styles.operationText}>
-                {currentExercise.operand1} {currentExercise.operatorSymbol ?? '+'} {currentExercise.operand2} = ?
+                {currentExercise.category === 'anterior_posterior' ||
+                currentExercise.category === 'suma_incompleta' ||
+                currentExercise.category === 'resta_incompleta'
+                  ? currentExercise.subtext
+                  : `${currentExercise.operand1} ${currentExercise.operatorSymbol ?? '+'} ${currentExercise.operand2} = ?`}
               </Text>
             </View>
-          )}
-
-          {currentExercise.subtext && !showFeedback && (
-            <Text style={styles.subtext}>{currentExercise.subtext}</Text>
           )}
         </Animated.View>
 

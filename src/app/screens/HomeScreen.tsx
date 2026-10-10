@@ -48,6 +48,30 @@ const CATEGORIES = [
     icon: '⚖️',
     color: '#7C3AED',
   },
+  {
+    id: 'anterior_posterior' as ExerciseCategory,
+    title: 'Anterior y posterior',
+    subtitle: 'Encuentra el número antes o después',
+    badge: '__ , 7 , __',
+    icon: '↔️',
+    color: '#059669',
+  },
+  {
+    id: 'suma_incompleta' as ExerciseCategory,
+    title: 'Sumas incompletas',
+    subtitle: 'Encuentra el sumando que falta',
+    badge: '3 + __ = 8',
+    icon: '🧩',
+    color: '#D97706',
+  },
+  {
+    id: 'resta_incompleta' as ExerciseCategory,
+    title: 'Restas incompletas',
+    subtitle: 'Completa el número que falta',
+    badge: '9 − __ = 4',
+    icon: '🔍',
+    color: '#4F46E5',
+  },
 ];
 
 export const HomeScreen = ({ navigation }: Props) => {

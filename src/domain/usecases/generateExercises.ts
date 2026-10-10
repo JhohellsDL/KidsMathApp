@@ -2,15 +2,21 @@ import { Exercise, ExerciseCategory } from '../models/Exercise';
 import { AdditionGenerator } from '../generators/AdditionGenerator';
 import { SubtractionGenerator } from '../generators/SubtractionGenerator';
 import { ComparisonGenerator } from '../generators/ComparisonGenerator';
+import { BeforeAfterGenerator } from '../generators/BeforeAfterGenerator';
+import { MissingAdditionGenerator } from '../generators/MissingAdditionGenerator';
+import { MissingSubtractionGenerator } from '../generators/MissingSubtractionGenerator';
 
 /**
  * Caso de uso central para generación de ejercicios matemáticos.
- * Soporta Sumas, Restas y Comparaciones (Mayor, menor o igual).
+ * Soporta Sumas, Restas, Comparaciones, Anterior/Posterior y Operaciones Incompletas.
  */
 export class GenerateExercisesUseCase {
   private additionGenerator = new AdditionGenerator();
   private subtractionGenerator = new SubtractionGenerator();
   private comparisonGenerator = new ComparisonGenerator();
+  private beforeAfterGenerator = new BeforeAfterGenerator();
+  private missingAdditionGenerator = new MissingAdditionGenerator();
+  private missingSubtractionGenerator = new MissingSubtractionGenerator();
 
   /**
    * Genera ejercicios según la categoría y rangos configurados.
@@ -29,6 +35,12 @@ export class GenerateExercisesUseCase {
         return this.subtractionGenerator.generate(config);
       case 'comparacion':
         return this.comparisonGenerator.generate(config);
+      case 'anterior_posterior':
+        return this.beforeAfterGenerator.generate(config);
+      case 'suma_incompleta':
+        return this.missingAdditionGenerator.generate(config);
+      case 'resta_incompleta':
+        return this.missingSubtractionGenerator.generate(config);
       case 'suma':
       default:
         return this.additionGenerator.generate(config);
