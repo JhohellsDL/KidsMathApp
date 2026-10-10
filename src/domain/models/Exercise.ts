@@ -1,10 +1,27 @@
-export interface Exercise {
+export type ExerciseCategory =
+  | 'suma'
+  | 'resta'
+  | 'comparacion'
+  | 'anterior_posterior'
+  | 'suma_incompleta'
+  | 'resta_incompleta'
+  | 'multiplicacion'
+  | 'division';
+
+export type ComparisonSymbol = '>' | '<' | '=';
+
+export interface Exercise<T = number | string> {
   id: number;
   question: string;
-  correctAnswer: number;
-  options: number[];
-  category: 'suma' | 'resta' | 'multiplicacion' | 'division';
+  subtext?: string;
+  correctAnswer: T;
+  options: T[];
+  category: ExerciseCategory;
   difficulty: number;
+  explanation?: string;
+  operand1?: number;
+  operand2?: number;
+  operatorSymbol?: string;
 }
 
 export interface GameSession {
@@ -12,6 +29,13 @@ export interface GameSession {
   currentExerciseIndex: number;
   correctAnswers: number;
   totalPoints: number;
+  category: ExerciseCategory;
   exercises: Exercise[];
 }
 
+export interface ExerciseGeneratorConfig {
+  count?: number;
+  minNumber?: number;
+  maxNumber?: number;
+  difficulty?: number;
+}

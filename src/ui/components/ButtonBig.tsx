@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   ViewStyle,
-  TextStyle,
 } from 'react-native';
 
 interface ButtonBigProps {
@@ -18,37 +17,44 @@ interface ButtonBigProps {
 export const ButtonBig: React.FC<ButtonBigProps> = ({
   title,
   onPress,
-  backgroundColor = '#4CAF50',
+  backgroundColor = '#16A34A',
   textColor = '#FFFFFF',
   style,
 }) => {
   return (
     <TouchableOpacity
-      style={[styles.button, {backgroundColor}, style]}
+      style={[
+        styles.button,
+        {
+          backgroundColor,
+        },
+        style,
+      ]}
       onPress={onPress}
-      activeOpacity={0.8}>
-      <Text style={[styles.text, {color: textColor}]}>{title}</Text>
+      activeOpacity={0.85}>
+      <Text style={[styles.text, { color: textColor }]}>{title}</Text>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   button: {
-    paddingVertical: 20,
-    paddingHorizontal: 40,
-    borderRadius: 25,
+    paddingVertical: 18,
+    paddingHorizontal: 32,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    minWidth: 200,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
+    minWidth: 220,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.25)',
+    borderBottomWidth: 5,
+    borderBottomColor: 'rgba(0, 0, 0, 0.22)',
   },
   text: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '800',
+    letterSpacing: -0.3,
   },
 });
+
 

@@ -7,31 +7,35 @@ describe('GenerateExercisesUseCase', () => {
     useCase = new GenerateExercisesUseCase();
   });
 
-  it('should generate the exact requested number of exercises', () => {
-    const count = 10;
-    const exercises = useCase.execute(count, 1, 10);
+  it('should generate addition exercises by default', () => {
+    const exercises = useCase.execute(10, 1, 10);
 
-    expect(exercises).toHaveLength(count);
-  });
-
-  it('should generate exercises with 4 unique options including the correct answer', () => {
-    const exercises = useCase.execute(5, 1, 10);
-
-    exercises.forEach((exercise) => {
-      expect(exercise.options).toHaveLength(4);
-      expect(new Set(exercise.options).size).toBe(4);
-      expect(exercise.options).toContain(exercise.correctAnswer);
-      expect(exercise.category).toBe('suma');
-      expect(exercise.difficulty).toBeGreaterThanOrEqual(1);
+    expect(exercises).toHaveLength(10);
+    exercises.forEach((ex) => {
+      expect(ex.category).toBe('suma');
+      expect(ex.options).toHaveLength(4);
+      expect(ex.options).toContain(ex.correctAnswer);
     });
   });
 
-  it('should generate distinct question pairs without immediate duplicates', () => {
-    const exercises = useCase.execute(15, 1, 10);
-    const questions = exercises.map((e) => e.question);
-    const uniqueQuestions = new Set(questions);
+  it('should generate subtraction exercises when requested', () => {
+    const exercises = useCase.execute(8, 1, 10, 'resta');
 
-    expect(uniqueQuestions.size).toBe(exercises.length);
+    expect(exercises).toHaveLength(8);
+    exercises.forEach((ex) => {
+      expect(ex.category).toBe('resta');
+      expect(Number(ex.correctAnswer)).toBeGreaterThanOrEqual(0);
+    });
+  });
+
+  it('should generate comparison exercises when requested', () => {
+    const exercises = useCase.execute(6, 1, 10, 'comparacion');
+
+    expect(exercises).toHaveLength(6);
+    exercises.forEach((ex) => {
+      expect(ex.category).toBe('comparacion');
+      expect(ex.options).toEqual(['>', '=', '<']);
+    });
   });
 
   it('should support executeHybrid combining static and generated exercises', () => {

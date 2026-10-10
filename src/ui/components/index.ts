@@ -1,5 +1,12 @@
-export {ButtonBig} from './ButtonBig';
-export {OptionCard} from './OptionCard';
-export {Avatar} from './Avatar';
-export {AdBanner} from './AdBanner';
-
+export { ButtonBig } from './ButtonBig';
+export { OptionCard } from './OptionCard';
+export { Avatar } from './Avatar';
+export { AdBanner } from './AdBanner';
+export { CategoryCard } from './home/CategoryCard';
+export { SettingsModal } from './home/SettingsModal';
+export { GameHeader } from './game/GameHeader';
+export { ComparisonArena } from './game/ComparisonArena';
+export { FeedbackBanner } from './game/FeedbackBanner';
+export { StatsOverview } from './result/StatsOverview';
+export { PointsCard } from './result/PointsCard';
+export { ExitConfirmModal } from './game/ExitConfirmModal';

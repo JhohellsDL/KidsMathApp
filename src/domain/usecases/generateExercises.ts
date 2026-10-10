@@ -1,118 +1,60 @@
-import {Exercise} from '../models/Exercise';
+import { Exercise, ExerciseCategory } from '../models/Exercise';
+import { AdditionGenerator } from '../generators/AdditionGenerator';
+import { SubtractionGenerator } from '../generators/SubtractionGenerator';
+import { ComparisonGenerator } from '../generators/ComparisonGenerator';
 
 /**
- * Generador de ejercicios aleatorios
- * Crea ejercicios de sumas con números aleatorios
+ * Caso de uso central para generación de ejercicios matemáticos.
+ * Soporta Sumas, Restas y Comparaciones (Mayor, menor o igual).
  */
 export class GenerateExercisesUseCase {
+  private additionGenerator = new AdditionGenerator();
+  private subtractionGenerator = new SubtractionGenerator();
+  private comparisonGenerator = new ComparisonGenerator();
+
   /**
-   * Genera ejercicios de suma aleatorios
-   * @param count Cantidad de ejercicios a generar
-   * @param minNumber Número mínimo (default: 1)
-   * @param maxNumber Número máximo (default: 10)
-   * @returns Array de ejercicios generados
+   * Genera ejercicios según la categoría y rangos configurados.
+   * Mantiene compatibilidad total con llamadas directas (default: suma).
    */
   execute(
-    count: number = 20,
+    count: number = 10,
     minNumber: number = 1,
     maxNumber: number = 10,
+    category: ExerciseCategory = 'suma',
   ): Exercise[] {
-    const exercises: Exercise[] = [];
-    const usedQuestions = new Set<string>();
+    const config = { count, minNumber, maxNumber };
 
-    let id = 1;
-    while (exercises.length < count) {
-      // Generar dos números aleatorios
-      const num1 = this.randomNumber(minNumber, maxNumber);
-      const num2 = this.randomNumber(minNumber, maxNumber);
-      const correctAnswer = num1 + num2;
-
-      // Crear key única para evitar duplicados
-      const questionKey = `${num1}+${num2}`;
-      if (usedQuestions.has(questionKey)) {
-        continue; // Saltar si ya existe
-      }
-      usedQuestions.add(questionKey);
-
-      // Generar opciones incorrectas
-      const options = this.generateOptions(correctAnswer, minNumber, maxNumber);
-
-      // Determinar dificultad basada en el resultado
-      const difficulty = correctAnswer <= 10 ? 1 : 2;
-
-      exercises.push({
-        id: id++,
-        question: `¿Cuánto es ${num1} + ${num2}?`,
-        correctAnswer,
-        options,
-        category: 'suma',
-        difficulty,
-      });
+    switch (category) {
+      case 'resta':
+        return this.subtractionGenerator.generate(config);
+      case 'comparacion':
+        return this.comparisonGenerator.generate(config);
+      case 'suma':
+      default:
+        return this.additionGenerator.generate(config);
     }
-
-    return exercises;
   }
 
   /**
-   * Genera un número aleatorio entre min y max (inclusive)
+   * Genera ejercicios mezclando estáticos y aleatorios.
    */
-  private randomNumber(min: number, max: number): number {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
-
-  /**
-   * Genera 4 opciones: la correcta + 3 incorrectas
-   */
-  private generateOptions(
-    correctAnswer: number,
-    minNumber: number,
-    maxNumber: number,
-  ): number[] {
-    const options = new Set<number>();
-    options.add(correctAnswer);
-
-    // Generar 3 opciones incorrectas cercanas a la respuesta correcta
-    while (options.size < 4) {
-      // Opciones cercanas para que sea desafiante
-      const offset = this.randomNumber(-3, 3);
-      const option = correctAnswer + offset;
-
-      // Validar que la opción sea razonable
-      if (option > 0 && option !== correctAnswer && option <= maxNumber * 2) {
-        options.add(option);
-      }
-    }
-
-    // Mezclar las opciones aleatoriamente
-    return Array.from(options).sort(() => Math.random() - 0.5);
-  }
-
-  /**
-   * Genera ejercicios mezclando estáticos y aleatorios
-   * @param staticExercises Ejercicios del JSON
-   * @param totalCount Total de ejercicios deseados
-   * @returns Mix de ejercicios estáticos y generados
-   */
-  executeHybrid(staticExercises: Exercise[], totalCount: number): Exercise[] {
-    // Si queremos más ejercicios de los que tenemos estáticos
+  executeHybrid(
+    staticExercises: Exercise[],
+    totalCount: number,
+    category: ExerciseCategory = 'suma',
+  ): Exercise[] {
     if (totalCount <= staticExercises.length) {
-      // Mezclar y retornar solo estáticos
-      return staticExercises
+      return [...staticExercises]
         .sort(() => Math.random() - 0.5)
         .slice(0, totalCount);
     }
 
-    // Mezclar ejercicios estáticos
-    const shuffledStatic = staticExercises.sort(() => Math.random() - 0.5);
-
-    // Generar ejercicios adicionales
+    const shuffledStatic = [...staticExercises].sort(() => Math.random() - 0.5);
     const additionalCount = totalCount - staticExercises.length;
-    const generatedExercises = this.execute(additionalCount);
+    const generatedExercises = this.execute(additionalCount, 1, 10, category);
 
-    // Combinar y mezclar todos
     return [...shuffledStatic, ...generatedExercises].sort(
       () => Math.random() - 0.5,
     );
   }
 }
-

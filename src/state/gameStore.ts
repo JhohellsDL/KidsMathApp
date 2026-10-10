@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Exercise } from '../domain/models/Exercise';
+import { Exercise, ExerciseCategory } from '../domain/models/Exercise';
 
 interface GameState {
   // Estado del juego
@@ -8,9 +8,10 @@ interface GameState {
   correctAnswers: number;
   totalPoints: number;
   isGameActive: boolean;
+  activeCategory: ExerciseCategory;
 
   // Acciones
-  startGame: (exercises: Exercise[]) => void;
+  startGame: (exercises: Exercise[], category?: ExerciseCategory) => void;
   answerQuestion: (isCorrect: boolean) => void;
   nextExercise: () => void;
   finishGame: () => void;
@@ -30,15 +31,17 @@ export const useGameStore = create<GameState>((set, get) => ({
   correctAnswers: 0,
   totalPoints: 0,
   isGameActive: false,
+  activeCategory: 'suma',
 
   // Acciones
-  startGame: (exercises: Exercise[]) => {
+  startGame: (exercises: Exercise[], category: ExerciseCategory = 'suma') => {
     set({
       exercises,
       currentExerciseIndex: 0,
       correctAnswers: 0,
       totalPoints: 0,
       isGameActive: true,
+      activeCategory: category,
     });
   },
 
@@ -46,7 +49,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (isCorrect) {
       set(state => ({
         correctAnswers: state.correctAnswers + 1,
-        totalPoints: state.totalPoints + 10, // 10 puntos por respuesta correcta
+        totalPoints: state.totalPoints + 10,
       }));
     }
   },
@@ -94,4 +97,3 @@ export const useGameStore = create<GameState>((set, get) => ({
     return state.currentExerciseIndex >= state.exercises.length - 1;
   },
 }));
-

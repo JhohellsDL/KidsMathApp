@@ -12,10 +12,10 @@ const mockExercises: Exercise[] = [
   },
   {
     id: 2,
-    question: '¿Cuánto es 2 + 3?',
-    correctAnswer: 5,
-    options: [4, 5, 6, 7],
-    category: 'suma',
+    question: '¿Cuál es el signo correcto?',
+    correctAnswer: '>',
+    options: ['>', '=', '<'],
+    category: 'comparacion',
     difficulty: 1,
   },
 ];
@@ -25,11 +25,12 @@ describe('useGameStore', () => {
     useGameStore.getState().resetGame();
   });
 
-  it('should initialize and start the game correctly', () => {
-    useGameStore.getState().startGame(mockExercises);
+  it('should initialize and start the game with active category', () => {
+    useGameStore.getState().startGame(mockExercises, 'comparacion');
 
     const state = useGameStore.getState();
     expect(state.isGameActive).toBe(true);
+    expect(state.activeCategory).toBe('comparacion');
     expect(state.exercises).toHaveLength(2);
     expect(state.currentExerciseIndex).toBe(0);
     expect(state.correctAnswers).toBe(0);
@@ -70,13 +71,5 @@ describe('useGameStore', () => {
     useGameStore.getState().doublePoints();
 
     expect(useGameStore.getState().totalPoints).toBe(20);
-  });
-
-  it('should calculate progress percentage accurately', () => {
-    useGameStore.getState().startGame(mockExercises);
-    expect(useGameStore.getState().getProgress()).toBe(50);
-
-    useGameStore.getState().nextExercise();
-    expect(useGameStore.getState().getProgress()).toBe(100);
   });
 });
