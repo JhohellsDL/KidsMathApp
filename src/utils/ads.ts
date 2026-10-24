@@ -12,6 +12,10 @@ import mobileAds, {
  * En producción (Release) utiliza los Ad Unit IDs reales de tu cuenta de AdMob.
  */
 export const AdConfig = {
+  /** Flag global para activar/desactivar banners rápidamente (ej. para subir AAB limpio de emergencia) */
+  SHOW_BANNER: true,
+  /** Flag global para activar/desactivar rewarded ads */
+  SHOW_REWARDED: true,
   android: {
     banner: __DEV__
       ? TestIds.BANNER
